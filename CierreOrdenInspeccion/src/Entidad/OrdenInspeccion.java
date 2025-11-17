@@ -54,14 +54,17 @@ public class OrdenInspeccion {
     }
  
    public void setfechaHoraCierre(LocalDate fecha){
-        this.fechaFinalizacion = fecha;
+        this.fechaHoraCierre = fecha;
    }
 
    public boolean esDeEmpleado(Long id){
        return this.empleado.getId().equals(id);
    }
 
-
+   public String getNombreEstacion(){
+       return this.estacionSismologica.getNombre();
+   }
+   
    public ArrayList esCompletamenteRealizada(){
        ArrayList<String> respuesta = new ArrayList<>();
         if(this.estado.esCompletamenteRealizada()){
@@ -80,8 +83,9 @@ public class OrdenInspeccion {
 
  
 
-   public void cerrar(Estado estadoCerrado, LocalDate fechaFinalizacion){
+   public void cerrar(Estado estadoCerrado, LocalDate fechaFinalizacion, String Observacion){
     this.setfechaHoraCierre(fechaFinalizacion);
+    this.observacionCierre = Observacion;
     this.setEstado(estadoCerrado);
   }
  

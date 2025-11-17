@@ -70,7 +70,7 @@ public class Sismografo {
     
 
     public boolean esTuEstacion(String NombreEstacion){
-        if (this.estacion.getNombre() == NombreEstacion){
+        if(this.estacion.getNombre() == NombreEstacion){
             return true;
         }else{
             return false;
@@ -78,12 +78,11 @@ public class Sismografo {
     }
     
     public void enviarAReparar(LocalDate fechaHoraActual, Estado estadoFueraServicio, Empleado empleado, ArrayList<TipoMotivo> tipoMotivos, ArrayList<String> comentarios){
+       
         this.buscarUltimoCambioEstado().setFechaHoraFin(fechaHoraActual);
-        ArrayList<MotivoFueraServicio> Motivos = new ArrayList();
-        for(int i= 0; i <tipoMotivos.size();i++){
-            Motivos.add(new MotivoFueraServicio(tipoMotivos.get(i),comentarios.get(i)));
-        }
-        this.cambiosEstado.add(new CambioEstado(fechaHoraActual,estadoFueraServicio,empleado,Motivos));
+        CambioEstado NewCambioEstado = new CambioEstado(fechaHoraActual,estadoFueraServicio,empleado);
+        NewCambioEstado.crearMotivoFueraServicio(tipoMotivos, comentarios);
+        this.cambiosEstado.add(NewCambioEstado); //corregir
     }
     
     public CambioEstado buscarUltimoCambioEstado(){

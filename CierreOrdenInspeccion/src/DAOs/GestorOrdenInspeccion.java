@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class GestorOrdenInspeccion {
+public class GestorOrdenInspeccion implements IAgregado{
     // Definicion de los atributos del gestor --> Es la informacion que almacena durante la secuencia del Caso de Uso
     private Sesion sesionActual;
     private Empleado empleadoLogueado;
@@ -39,7 +39,7 @@ public class GestorOrdenInspeccion {
     private Sismografo sismografoSeleccionado;
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("MiUnidadPersistencia");
     private EntityManager em = emf.createEntityManager();
-
+    
     public GestorOrdenInspeccion() {
     }
     
@@ -104,46 +104,49 @@ public class GestorOrdenInspeccion {
         
     */
     public void buscarOrdenesInspeccionCompletamenteRealizadas() {
-        for (OrdenInspeccion orden : this.ordenDeInspeccion) {
-            if (orden.esDeEmpleado(this.empleadoLogueado.getId()) && orden.esCompletamenteRealizada() != null) {
-                ArrayList respuesta = orden.esCompletamenteRealizada();
+        String idEmpleado = String.valueOf(this.empleadoLogueado.getId());
+        String[] filtros = new String[]{idEmpleado};
+        IteradorOrdenDeInspeccion iteradorOrdenes = (IteradorOrdenDeInspeccion) this.crearIterador(this.ordenDeInspeccion,filtros);
+        OrdenInspeccion Actual = (OrdenInspeccion) iteradorOrdenes.primero();
+        
+        while(!iteradorOrdenes.haTerminado()){
+            
+            Actual = (OrdenInspeccion)iteradorOrdenes.actual();
+            if(Actual != null){
+                this.nroOrden.add(Actual.getNumeroOrden());
+                this.fechaFin.add(Actual.getfechaFinalizacion());
+                this.nombreEstacion.add(Actual.getNombreEstacion());
 
-                if (respuesta.size() >= 3) {
-                    this.nroOrden.add(Integer.valueOf(respuesta.get(0).toString()));
-                    this.fechaFin.add(LocalDate.parse(respuesta.get(1).toString()));
-                    this.nombreEstacion.add(respuesta.get(2).toString());
-                    
-                    if (!nombreEstacion.isEmpty()) {
-                        this.buscarSismografo(nombreEstacion.getLast());
-                        System.out.println("Traje Sismografo");
-                    }
-
-                    // Validar que todas las listas tengan al menos un elemento
-                    if (!nroOrden.isEmpty() && !fechaFin.isEmpty() && !nombreEstacion.isEmpty() && !sismografoDeLaEstacion.isEmpty()) {
-                        InfoOrdenada nuevoElemento = new InfoOrdenada(
-                            nroOrden.getLast(),
-                            fechaFin.getLast(),
-                            nombreEstacion.getLast(),
-                            sismografoDeLaEstacion.getLast()
-                        );
-
-                        this.infoOrdenada.add(nuevoElemento);
-                        System.out.println("nueva informacion agregada: " + nuevoElemento);
-                    } else {
-                        System.out.println("⚠️ No se pudo crear InfoOrdenada: faltan datos.");
-                    }
-
-                } else {
-                    System.out.println("⚠️ 'respuesta' no tiene los elementos esperados: " + respuesta);
+                if (!nombreEstacion.isEmpty()) {
+                    this.buscarSismografo(nombreEstacion.getLast());
+                    System.out.println("Traje Sismografo");
                 }
+                // Validar que todas las listas tengan al menos un elemento
+                if (!nroOrden.isEmpty() && !fechaFin.isEmpty() && !nombreEstacion.isEmpty() && !sismografoDeLaEstacion.isEmpty()) {
+                    InfoOrdenada nuevoElemento = new InfoOrdenada(
+                        nroOrden.getLast(),
+                        fechaFin.getLast(),
+                        nombreEstacion.getLast(),
+                        sismografoDeLaEstacion.getLast()
+                    );
+
+                    this.infoOrdenada.add(nuevoElemento);
+                    System.out.println("nueva informacion agregada: " + nuevoElemento);
+                } else {
+                    System.out.println("⚠️ No se pudo crear InfoOrdenada: faltan datos.");
+                } 
             }
-        }
+                
+            iteradorOrdenes.siguiente();
+        }    
+        
     }
 
     /*
         Para buscar el sismografo Asociado a una orden, se recorre el array de sismografos
         verificando si coincide con la estacion de la orden
     */
+    
     public void buscarSismografo(String nombreEstacion){
         for (Sismografo sismografo : sismografos){
             if(sismografo.esTuEstacion(nombreEstacion)){
@@ -151,7 +154,11 @@ public class GestorOrdenInspeccion {
             }
         }
     }
-
+    
+    @Override
+    public IIterador crearIterador(ArrayList<OrdenInspeccion> ordenes,String[] filtros) {
+        return new IteradorOrdenDeInspeccion(ordenes,filtros);
+    }
     /*
         Implementa el metodo sort para ordenar el array de ordenes de Inspeccion
         que son de un determinado responsable de Inspeccion
@@ -175,8 +182,10 @@ public class GestorOrdenInspeccion {
             if (info.getNroOrden() == nroOrden){
                 //this.simografoSeleccionado = info.getSismografo();
                 for(Sismografo s : this.sismografos){
+                    System.out.println(s.getNroSerie());
                     if(s.esTuEstacion(info.getNombre())){
                         this.sismografoSeleccionado = s;
+                        System.out.println("Sismografo encontrado"+ s);
                     }
                 } 
             }
@@ -281,7 +290,7 @@ public class GestorOrdenInspeccion {
     }
 
     public void cerrarOrdenInspeccion(){
-        this.ordenSeleccionada.cerrar(this.estadoCerrada,this.fechaHoraActual);
+        this.ordenSeleccionada.cerrar(this.estadoCerrada,this.fechaHoraActual,this.observacionCierre);
     }
 
     public void inhabilitarSismografo(){
@@ -313,6 +322,8 @@ public class GestorOrdenInspeccion {
     public void finCU(){
         System.out.println("Fin CU");
     } 
+
+    
 
 }
 

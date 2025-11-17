@@ -36,11 +36,11 @@ public class CambioEstado {
     }
 
     //Constructor con parámetros
-    public CambioEstado(LocalDate fechaHoraInicio, Estado estado, Empleado empleado, ArrayList<MotivoFueraServicio> motivos) {
+    public CambioEstado(LocalDate fechaHoraInicio, Estado estado, Empleado empleado) {
         this.fechaHoraInicio = fechaHoraInicio;
         this.estado = estado;
         this.empleado = empleado;
-        this.motivos = motivos;
+        this.motivos = new ArrayList();
     }
     
 
@@ -69,7 +69,15 @@ public class CambioEstado {
     public void setEmpleado(Empleado empleado) {
         this.empleado = empleado;
     }
-
+    
+    public void crearMotivoFueraServicio(ArrayList<TipoMotivo> tipoMotivos, ArrayList<String> comentarios){
+        ArrayList<MotivoFueraServicio> Motivos = new ArrayList();
+        for(int i= 0; i <tipoMotivos.size();i++){
+            this.motivos.add(new MotivoFueraServicio(tipoMotivos.get(i),comentarios.get(i)));
+        }
+        
+    }
+    
     //Es Ultimo Cambio de Estado
     public boolean esUltimoCambioEstado(){
         if (this.fechaHoraFin == null){
